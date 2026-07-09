@@ -2189,7 +2189,7 @@
                                 <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
                             </div>
                             <div class="img-list" id="imgList"></div>
-                            <!-- ★ 新增：应用当前设置并保存预览（独立按钮，不自动上传） -->
+                            <!-- ★ 新增：应用当前设置并保存预览（批量生成多张拼图） -->
                             <button class="btn by" onclick="applyCurrentAndSave()" style="margin-top:6px; font-size:11px;">📥 应用当前设置并保存预览</button>
                             <button class="btn br" onclick="clearAll()" style="margin-top:4px;">🗑 清空所有</button>
                         </div>
@@ -3656,26 +3656,45 @@
             document.getElementById('globalNext').textContent = gNext;
             document.getElementById('nextDisp').textContent = gNext; }
 
-        // ★ 新增：应用当前设置并保存预览（不自动上传，不重置工作区）
+        // ★ 新增：应用当前设置并保存预览（批量生成多张拼图）
         function applyCurrentAndSave() {
             if (imgs.length === 0) {
                 alert('🐻 请先添加图片~');
                 return;
             }
+            var perPage = gRows * gCols;
+            if (perPage === 0) perPage = 1;
+            var total = imgs.length;
             var sn = +document.getElementById('startNum').value;
-            var cnt = imgs.length;
-            var exp = document.createElement('canvas');
-            var ec = exp.getContext('2d');
-            // 使用当前所有设置（布局、序号、水印、文字等），不包含草稿层
-            renderToCtx(ec, 1, false);
-            saved.push({
-                url: exp.toDataURL('image/png'),
-                range: sn + '~' + (sn + cnt - 1),
-                cnt: cnt,
-                ts: Date.now()
-            });
+            var startIdx = 0;
+            var page = 1;
+            while (startIdx < total) {
+                var endIdx = Math.min(startIdx + perPage, total);
+                var pageImgs = imgs.slice(startIdx, endIdx);
+                // 创建一个临时 canvas，只渲染这组图片
+                var tempCanvas = document.createElement('canvas');
+                var tempCtx = tempCanvas.getContext('2d');
+                // 暂时替换全局 imgs 为当前组
+                var origImgs = imgs;
+                imgs = pageImgs;
+                // 渲染（不使用草稿）
+                renderToCtx(tempCtx, 1, false);
+                // 恢复全局 imgs
+                imgs = origImgs;
+                // 保存到 saved
+                var rangeStr = sn + '~' + (sn + pageImgs.length - 1);
+                saved.push({
+                    url: tempCanvas.toDataURL('image/png'),
+                    range: rangeStr,
+                    cnt: pageImgs.length,
+                    ts: Date.now() + page // 稍微错开时间戳
+                });
+                sn += pageImgs.length;
+                startIdx += perPage;
+                page++;
+            }
             refreshSaved();
-            // 不自动递增序号，也不清空图片，让用户自由调整并多次保存
+            // 不自动递增全局序号，也不清空图片，用户可以继续调整并再次保存
             renderCanvas();
         }
 
