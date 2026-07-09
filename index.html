@@ -2112,7 +2112,7 @@
                         <div class="h-sc"><span class="h-sc-key">2×</span><span class="h-sc-desc">导出2倍清晰图</span></div>
                         <div class="h-sc"><span class="h-sc-key">50%</span><span class="h-sc-desc">默认预览缩放比例</span></div>
                     </div>
-                    <div class="h-tip" style="margin-top:10px;"><span class="h-tip-icon">📦</span><div class="h-tip-text"><b>一键批量处理导出图片</b>：点击「添加图片」区域的 <b>📥 应用当前设置并保存预览</b> 按钮，系统会自动根据当前的行列数和序号设置，将所有图片按顺序分组，<b>批量生成多张拼图</b>并直接保存到右侧「已保存预览」列表中。每组的序号会连续递增（如第1组1~4，第2组5~8），方便您一次性完成大批量图片的拼图制作与预览。</div></div>
+                    <div class="h-tip" style="margin-top:10px;"><span class="h-tip-icon">📦</span><div class="h-tip-text"><b>导入多张图片一键批量拼图</b>：点击「添加图片」区域的 <b>📥 导入多张图片一键批量拼图</b> 按钮，系统会自动根据当前的行列数和序号设置，将所有图片按顺序分组，<b>批量生成多张拼图</b>并直接保存到右侧「已保存预览」列表中。每组的序号会连续递增（如第1组1~4，第2组5~8），方便您一次性完成大批量图片的拼图制作与预览。</div></div>
                     <div class="h-tip"><span class="h-tip-icon">⚠️</span><div class="h-tip-text"><b>草稿层</b>只在预览中可见，<b>不会出现在任何导出或保存的图片里</b>，确认添加后才正式渲染。</div></div>
                 </div>
                 <div class="h-divider"></div>
@@ -2183,7 +2183,8 @@
                                 <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
                             </div>
                             <div class="img-list" id="imgList"></div>
-                            <button class="btn by" onclick="applyCurrentAndSave()" style="margin-top:6px; font-size:11px;">📥 应用当前设置并保存预览</button>
+                            <!-- ★ 按钮改名 -->
+                            <button class="btn by" onclick="applyCurrentAndSave()" style="margin-top:6px; font-size:11px;">📥 导入多张图片一键批量拼图</button>
                             <button class="btn br" onclick="clearAll()" style="margin-top:4px;">🗑 清空所有</button>
                         </div>
                     </div>
@@ -2542,22 +2543,9 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
-        function loadThemePref() {
-            try {
-                var theme = localStorage.getItem('bear_theme') || 'light';
-                var idx = parseInt(localStorage.getItem('bear_schemeIdx')) || 8;
-                var custom = localStorage.getItem('bear_customAccent') || null;
-                return { theme: theme, schemeIdx: idx, customAccent: custom };
-            } catch (e) { return { theme: 'light', schemeIdx: 8, customAccent: null }; }
-        }
-
-        function saveThemePref(theme, idx, custom) {
-            try {
-                if (theme) localStorage.setItem('bear_theme', theme);
-                if (idx !== undefined) localStorage.setItem('bear_schemeIdx', String(idx));
-                if (custom) localStorage.setItem('bear_customAccent', custom);
-            } catch (e) {}
-        }
+        // ============================================================
+        // ★ 主题记忆功能已移除，所有设置不保存到 localStorage
+        // ============================================================
 
         function openHelp() { document.getElementById('helpModal').classList.add('show'); }
 
@@ -2678,9 +2666,9 @@
                 16) }; }
 
         function buildTheme() {
-            var pref = loadThemePref();
-            isDark = (pref.theme === 'dark');
-            schemeIdx = pref.schemeIdx;
+            // ★ 不再从 localStorage 读取，默认使用棕色 (schemeIdx = 8)
+            isDark = false;
+            schemeIdx = 8;
             var sd = document.getElementById('schemeDots');
             schemes.forEach(function(s, i) {
                 var d = document.createElement('div');
@@ -2704,10 +2692,6 @@
             document.documentElement.style.setProperty('--topbar-a', ta);
             document.documentElement.style.setProperty('--topbar-b', tb);
             document.getElementById('customAccent').value = accent;
-            if (pref.customAccent) {
-                applyCustom(pref.customAccent);
-                document.getElementById('customAccent').value = pref.customAccent;
-            }
             document.querySelectorAll('.cdot').forEach(function(el, i) {
                 el.classList.toggle('active', i === schemeIdx);
             });
@@ -2727,7 +2711,7 @@
             document.documentElement.style.setProperty('--topbar-a', ta);
             document.documentElement.style.setProperty('--topbar-b', tb);
             document.getElementById('customAccent').value = accent;
-            saveThemePref(isDark ? 'dark' : 'light', i, null);
+            // ★ 不再保存到 localStorage
         }
 
         function setAccentVars(hex) {
@@ -2744,7 +2728,7 @@
             var li = 'rgb(' + Math.min(255, c.r + 50) + ',' + Math.min(255, c.g + 50) + ',' + Math.min(255, c.b + 50) + ')';
             document.documentElement.style.setProperty('--topbar-a', hex);
             document.documentElement.style.setProperty('--topbar-b', li);
-            saveThemePref(isDark ? 'dark' : 'light', schemeIdx, hex);
+            // ★ 不再保存到 localStorage
         }
 
         function setMode(m) {
@@ -2754,7 +2738,7 @@
             document.getElementById('dBtn').classList.toggle('active', isDark);
             document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙';
             applyScheme(schemeIdx, document.querySelectorAll('.cdot')[schemeIdx]);
-            saveThemePref(m, schemeIdx, document.getElementById('customAccent').value);
+            // ★ 不再保存到 localStorage
         }
 
         function toggleDark() { setMode(isDark ? 'light' : 'dark'); }
@@ -3755,6 +3739,7 @@
             initSwapGrid();
         }
 
+        // ★ 批量拼图核心函数（按钮功能）
         function applyCurrentAndSave() {
             if (imgs.length === 0) {
                 alert('🐻 请先添加图片~');
