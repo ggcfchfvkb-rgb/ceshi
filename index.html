@@ -2183,7 +2183,6 @@
                                 <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
                             </div>
                             <div class="img-list" id="imgList"></div>
-                            <!-- ★ 按钮改名 -->
                             <button class="btn by" onclick="applyCurrentAndSave()" style="margin-top:6px; font-size:11px;">📥 导入多张图片一键批量拼图</button>
                             <button class="btn br" onclick="clearAll()" style="margin-top:4px;">🗑 清空所有</button>
                         </div>
@@ -2244,7 +2243,6 @@
                             </div>
                         </div>
 
-                        <!-- ★ 交换图片位置功能 -->
                         <div class="sec-title" onclick="togSec(this)" style="margin-top:6px"><span>🔄 交换图片位置</span><span class="arrow">▾</span></div>
                         <div class="sec-body">
                             <p style="font-size:10px;color:var(--text2);font-weight:700;margin-bottom:6px;">点击选中两张图片（先点第一张，再点第二张）即可自动交换位置</p>
@@ -2543,9 +2541,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
-        // ============================================================
-        // ★ 主题记忆功能已移除，所有设置不保存到 localStorage
-        // ============================================================
+        // 主题记忆功能已移除
 
         function openHelp() { document.getElementById('helpModal').classList.add('show'); }
 
@@ -2666,7 +2662,7 @@
                 16) }; }
 
         function buildTheme() {
-            // ★ 不再从 localStorage 读取，默认使用棕色 (schemeIdx = 8)
+            // 默认使用棕色 (schemeIdx = 8)
             isDark = false;
             schemeIdx = 8;
             var sd = document.getElementById('schemeDots');
@@ -2711,7 +2707,6 @@
             document.documentElement.style.setProperty('--topbar-a', ta);
             document.documentElement.style.setProperty('--topbar-b', tb);
             document.getElementById('customAccent').value = accent;
-            // ★ 不再保存到 localStorage
         }
 
         function setAccentVars(hex) {
@@ -2728,7 +2723,6 @@
             var li = 'rgb(' + Math.min(255, c.r + 50) + ',' + Math.min(255, c.g + 50) + ',' + Math.min(255, c.b + 50) + ')';
             document.documentElement.style.setProperty('--topbar-a', hex);
             document.documentElement.style.setProperty('--topbar-b', li);
-            // ★ 不再保存到 localStorage
         }
 
         function setMode(m) {
@@ -2738,7 +2732,6 @@
             document.getElementById('dBtn').classList.toggle('active', isDark);
             document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙';
             applyScheme(schemeIdx, document.querySelectorAll('.cdot')[schemeIdx]);
-            // ★ 不再保存到 localStorage
         }
 
         function toggleDark() { setMode(isDark ? 'light' : 'dark'); }
@@ -3739,7 +3732,7 @@
             initSwapGrid();
         }
 
-        // ★ 批量拼图核心函数（按钮功能）
+        // ★ 批量拼图：同步应用所有当前设置（包括水印、文字、草稿等）
         function applyCurrentAndSave() {
             if (imgs.length === 0) {
                 alert('🐻 请先添加图片~');
@@ -3760,7 +3753,8 @@
                 var origImgs = imgs;
                 imgs = pageImgs;
                 document.getElementById('startNum').value = currentSn;
-                renderToCtx(tempCtx, 1, false);
+                // ★ 关键：启用草稿渲染，让水印、文字等所有当前设置同步到每一张图
+                renderToCtx(tempCtx, 1, true);
                 imgs = origImgs;
                 var rangeStr = currentSn + '~' + (currentSn + pageImgs.length - 1);
                 saved.push({
